@@ -13,7 +13,9 @@ public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String lastName;
-    private String email;
+    private String firstName;
+    private String paternalLastName;
+    private String maternalLastName;
+    private String currencyOfIncome;
+    private Double monthlyIncome;
 }

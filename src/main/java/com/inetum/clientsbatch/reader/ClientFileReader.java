@@ -15,7 +15,7 @@ public class ClientFileReader {
                 .name("clientItemReader")
                 .resource(new ClassPathResource("clients.csv"))
                 .delimited()
-                .names("name", "lastName", "email")
+                .names("firstName","paternalLastName","maternalLastName","currencyOfIncome","monthlyIncome")
                 .fieldSetMapper(new BeanWrapperFieldSetMapper<>() {{
                     setTargetType(Client.class);
                 }})

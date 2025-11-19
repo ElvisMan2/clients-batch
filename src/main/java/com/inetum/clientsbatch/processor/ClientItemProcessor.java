@@ -7,8 +7,12 @@ public class ClientItemProcessor implements ItemProcessor<Client, Client> {
     @Override
     public Client process(Client client) throws Exception {
         // Example processing: Convert name and lastName to uppercase
-        client.setName(client.getName().toUpperCase());
-        client.setLastName(client.getLastName().toUpperCase());
+        client.setFirstName(client.getFirstName());
+        client.setPaternalLastName(client.getPaternalLastName());
+        client.setMaternalLastName(client.getMaternalLastName());
+        client.setCurrencyOfIncome(client.getCurrencyOfIncome());
+        client.setMonthlyIncome(client.getMonthlyIncome());
+
         return client;
     }
 }
