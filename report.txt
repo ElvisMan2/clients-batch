@@ -1,0 +1,3 @@
+Step Summary:
+Total Records Read: 20
+Total Records Written: 20
