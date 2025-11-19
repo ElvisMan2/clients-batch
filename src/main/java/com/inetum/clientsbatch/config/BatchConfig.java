@@ -4,7 +4,6 @@ import com.inetum.clientsbatch.model.Client;
 import com.inetum.clientsbatch.processor.ClientItemProcessor;
 import com.inetum.clientsbatch.reader.ClientFileReader;
 import com.inetum.clientsbatch.writer.ReportWriter;
-import jakarta.persistence.EntityManagerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -18,11 +17,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class BatchConfig {
 
-    private final EntityManagerFactory emf;
     private final ClientFileReader clientFileReader;
 
-    public BatchConfig(EntityManagerFactory emf, ClientFileReader clientFileReader) {
-        this.emf = emf;
+    public BatchConfig(ClientFileReader clientFileReader) {
         this.clientFileReader = clientFileReader;
     }
 
@@ -33,7 +30,7 @@ public class BatchConfig {
 
     @Bean
     ReportWriter writer() {
-        return new ReportWriter(emf);
+        return new ReportWriter();
     }
 
     @Bean
@@ -55,4 +52,3 @@ public class BatchConfig {
                 .build();
     }
 }
-
