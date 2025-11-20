@@ -46,10 +46,10 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                                 .get("clientId")
                                 .asLong()
                 );
-                System.out.println("✔ Cliente enviado: id: "+data.getClientId() +" nombre: "+ data.getFirstName());
+                System.out.println("Cliente creado: id: "+data.getClientId() +" nombre: "+ data.getFirstName());
                 return data;
             } else {
-                System.err.println("✘ Error al enviar cliente: " + response.getStatusCode());
+                System.err.println("Error al enviar cliente: " + response.getStatusCode());
                 return null; // No procesar este cliente
             }
 
