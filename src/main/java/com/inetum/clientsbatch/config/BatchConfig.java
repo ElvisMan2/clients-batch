@@ -38,9 +38,9 @@ public class BatchConfig {
                      PlatformTransactionManager platformTransactionManager){
         return new StepBuilder("step1",jobRepository)
                 .<Client, Client>chunk(5,platformTransactionManager)
-                .reader(clientFileReader.clientItemReader())
-                .processor(processor())
-                .writer(writer())
+                .reader(clientFileReader.clientItemReader())//extrae los clientes del csv
+                .processor(processor())//procesa cada cliente enviandolo a la api
+                .writer(writer())//genera el reporte
                 .build();
     }
 
