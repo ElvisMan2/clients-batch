@@ -1,6 +1,6 @@
 package com.inetum.clientsbatch.writer;
 
-import com.inetum.clientsbatch.model.Data;
+import com.inetum.clientsbatch.dto.Data;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.item.Chunk;

@@ -1,6 +1,6 @@
 package com.inetum.clientsbatch.config;
 
-import com.inetum.clientsbatch.model.Data;
+import com.inetum.clientsbatch.dto.Data;
 import com.inetum.clientsbatch.processor.ClientItemProcessor;
 import com.inetum.clientsbatch.reader.ClientFileReader;
 import com.inetum.clientsbatch.writer.ReportWriter;

@@ -1,4 +1,4 @@
-package com.inetum.clientsbatch.model;
+package com.inetum.clientsbatch.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 
 @lombok.Data

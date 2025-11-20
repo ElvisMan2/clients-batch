@@ -1,6 +1,6 @@
 package com.inetum.clientsbatch.reader;
 
-import com.inetum.clientsbatch.model.Data;
+import com.inetum.clientsbatch.dto.Data;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;

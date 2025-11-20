@@ -1,7 +1,7 @@
 package com.inetum.clientsbatch.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inetum.clientsbatch.model.Data;
+import com.inetum.clientsbatch.dto.Data;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
