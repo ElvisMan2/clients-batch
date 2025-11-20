@@ -1,0 +1,2 @@
+mvn clean verify sonar:sonar -Dsonar.projectKey=batch-clients-simulations -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_6122f7ec46973a70fb1eaec81750c425c68f3e47
+
