@@ -47,7 +47,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                         .get("clientId")
                         .asLong();
 
-                data.setClientId(clientId);
+                data.setClientId(clientId);// Guardar el clientId en el objeto Data
                 System.out.println("✓ Cliente creado: id: " + clientId + " nombre: " + data.getFirstName());
 
                 // Segunda llamada: Crear simulación
@@ -88,6 +88,12 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
             if (simulationResponse.getStatusCode().is2xxSuccessful()) {
                 System.out.println("✓ Simulación creada para cliente: " + clientId);
+                Long simulationId = new ObjectMapper()
+                        .readTree(simulationResponse.getBody())
+                        .get(1)
+                        .get("clientId")
+                        .asLong();
+                data.setSimulationId(simulationId);// Guardar el simulationId en el objeto Data
                 return true;
             } else {
                 System.err.println("✗ Error al crear simulación para cliente " + clientId + ": " + simulationResponse.getStatusCode());
