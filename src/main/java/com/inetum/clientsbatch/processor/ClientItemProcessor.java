@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -139,8 +140,13 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
             if (loanResponse.getStatusCode().is2xxSuccessful()) {
                 var jsonNode = objectMapper.readTree(loanResponse.getBody());
                 Long loanId = jsonNode.get("loanId").asLong();
-                //data.setLoanId(loanId);
+                data.setLoanId(loanId);
 
+                String dueDateString = jsonNode.path("payment").get(0).path("dueDate").asText();
+                LocalDate dueDate = LocalDate.parse(dueDateString);
+                data.setNextPaymentDate(dueDate);
+
+                data.setTotalInterest(data.getMonthlyPayment()*data.getTerm()-data.getLoanAmount());
                 System.out.println("✓ Préstamo creado: loanId: " + loanId + " para simulación: " + simulationId);
                 return true;
             } else {
@@ -149,7 +155,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
             }
 
         } catch (Exception e) {
-            System.err.println("⚠ Error creando préstamo para simulación " + simulationId);
+            System.err.println("⚠ Error creando simulación para cliente " + simulationId);
             e.printStackTrace();
             return false;
         }

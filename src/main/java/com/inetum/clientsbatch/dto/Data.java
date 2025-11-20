@@ -32,4 +32,9 @@ public class Data {
     private Double totalPayment;//calculado por la API
     private Boolean approved;//calculado por la API
 
+    // Datos del préstamo
+    private Long loanId;//generado por la API
+    private Double totalInterest;//calculado por la API
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate nextPaymentDate;//calculado por la API
 }
