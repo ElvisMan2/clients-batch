@@ -15,6 +15,17 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>5.3.0.6276</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
             <version>1.16.0</version>
@@ -72,11 +83,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.batch</groupId>
             <artifactId>spring-batch-test</artifactId>
             <scope>test</scope>
@@ -96,6 +102,48 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+
+                <configuration>
+                    <excludes>
+                        <!-- DTOs -->
+                        <exclude>com/inetum/clientsbatch/dto/**</exclude>
+                        <!-- util -->
+                        <exclude>com/inetum/clientsbatch/util/**</exclude>
+                        <!-- Opcional: Clase principal -->
+                        <exclude>**/*Application.class</exclude>
+
+                        <!-- Opcional: Configurations -->
+<!--                        <exclude>**/*Config.class</exclude>-->
+                    </excludes>
+                </configuration>
+
+                <executions>
+                    <!-- INSTRUMENTA EL CÓDIGO ANTES DE CORRER LOS TESTS -->
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+
+                    <!-- GENERA EL REPORTE DESPUÉS DE LOS TESTS -->
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

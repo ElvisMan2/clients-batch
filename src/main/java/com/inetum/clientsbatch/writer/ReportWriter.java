@@ -8,6 +8,7 @@ import org.springframework.batch.item.ItemWriter;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class ReportWriter implements ItemWriter<Data> {
 
     @AfterStep
     public void afterStep(StepExecution stepExecution) {
-        try (FileWriter writer = new FileWriter("report.txt")) {
+        try (FileWriter writer = new FileWriter("report.txt", StandardCharsets.UTF_8)) {
             writer.write("=".repeat(120) + "\n");
             writer.write("REPORTE DE PRÉSTAMOS GENERADOS\n");
             writer.write("=".repeat(120) + "\n\n");
