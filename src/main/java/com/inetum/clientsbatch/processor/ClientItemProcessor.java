@@ -15,11 +15,14 @@ import java.util.Map;
 public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
     private final String apiUrl = "http://localhost:8081/api-simulation-loans/api/clients";
     private final String simulationApiUrl = "http://localhost:8081/api-simulation-loans/simulations/client/";
+    private final String loanApiUrl = "http://localhost:8082/api-generation-loans/loans/generate/simulation/";
 
     public ClientItemProcessor() {
         this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -40,14 +43,10 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
             var response = restTemplate.postForEntity(apiUrl, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
+                var jsonNode = objectMapper.readTree(response.getBody()).get(1);
 
-                Long clientId = new ObjectMapper()
-                        .readTree(response.getBody())
-                        .get(1)
-                        .get("clientId")
-                        .asLong();
-
-                data.setClientId(clientId);// Guardar el clientId en el objeto Data
+                Long clientId = jsonNode.get("clientId").asLong();
+                data.setClientId(clientId);
                 System.out.println("✓ Cliente creado: id: " + clientId + " nombre: " + data.getFirstName());
 
                 // Segunda llamada: Crear simulación
@@ -87,14 +86,32 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
             var simulationResponse = restTemplate.postForEntity(simulationUrl, simulationRequest, String.class);
 
             if (simulationResponse.getStatusCode().is2xxSuccessful()) {
-                System.out.println("✓ Simulación creada para cliente: " + clientId);
-                Long simulationId = new ObjectMapper()
-                        .readTree(simulationResponse.getBody())
-                        .get(1)
-                        .get("clientId")
-                        .asLong();
-                data.setSimulationId(simulationId);// Guardar el simulationId en el objeto Data
-                return true;
+                var jsonNode = objectMapper.readTree(simulationResponse.getBody()).get(1);
+
+                Long simulationId = jsonNode.get("simulationId").asLong();
+                data.setSimulationId(simulationId);
+
+                Boolean approved = jsonNode.get("approved").asBoolean();
+                data.setApproved(approved);
+
+                Double monthlyPayment = jsonNode.get("monthlyPayment").asDouble();
+                data.setMonthlyPayment(monthlyPayment);
+
+                Double totalPayment = jsonNode.get("totalPayment").asDouble();
+                data.setTotalPayment(totalPayment);
+
+                System.out.println("✓ Simulación creada para cliente: " + clientId +
+                        " | simulationId: " + simulationId +
+                        " | approved: " + approved);
+
+                // Tercera llamada: Crear préstamo solo si está aprobado
+                if (approved) {
+                    return createLoan(data, simulationId, headers);
+                } else {
+                    System.out.println("⚠ Simulación no aprobada para cliente: " + clientId + " - No se creará el préstamo");
+                    return true;
+                }
+
             } else {
                 System.err.println("✗ Error al crear simulación para cliente " + clientId + ": " + simulationResponse.getStatusCode());
                 return false;
@@ -102,6 +119,32 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
         } catch (Exception e) {
             System.err.println("⚠ Error creando simulación para cliente " + clientId);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean createLoan(Data data, Long simulationId, HttpHeaders headers) {
+        try {
+            HttpEntity<Void> loanRequest = new HttpEntity<>(headers);
+            String loanUrl = loanApiUrl + simulationId;
+
+            var loanResponse = restTemplate.postForEntity(loanUrl, loanRequest, String.class);
+
+            if (loanResponse.getStatusCode().is2xxSuccessful()) {
+                var jsonNode = objectMapper.readTree(loanResponse.getBody());
+                Long loanId = jsonNode.get("loanId").asLong();
+                //data.setLoanId(loanId);
+
+                System.out.println("✓ Préstamo creado: loanId: " + loanId + " para simulación: " + simulationId);
+                return true;
+            } else {
+                System.err.println("✗ Error al crear préstamo para simulación " + simulationId + ": " + loanResponse.getStatusCode());
+                return false;
+            }
+
+        } catch (Exception e) {
+            System.err.println("⚠ Error creando préstamo para simulación " + simulationId);
             e.printStackTrace();
             return false;
         }
