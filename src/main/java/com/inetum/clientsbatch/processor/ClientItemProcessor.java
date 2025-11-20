@@ -1,5 +1,6 @@
 package com.inetum.clientsbatch.processor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inetum.clientsbatch.model.Data;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.http.HttpEntity;
@@ -37,7 +38,15 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
             var response = restTemplate.postForEntity(apiUrl, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("✔ Cliente enviado: " + data.getFirstName());
+
+                data.setClientId(   //Asignar clientId devuelto por la API
+                        new ObjectMapper()
+                                .readTree(response.getBody())
+                                .get(1)
+                                .get("clientId")
+                                .asLong()
+                );
+                System.out.println("✔ Cliente enviado: id: "+data.getClientId() +" nombre: "+ data.getFirstName());
                 return data;
             } else {
                 System.err.println("✘ Error al enviar cliente: " + response.getStatusCode());
