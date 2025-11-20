@@ -47,7 +47,12 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
                 Long clientId = jsonNode.get("clientId").asLong();
                 data.setClientId(clientId);
+
+                if(response.getStatusCode().value()== 201)
                 System.out.println("✓ Cliente creado: id: " + clientId + " nombre: " + data.getFirstName());
+
+                if(response.getStatusCode().value()== 200)
+                    System.out.println("✓ Cliente existe: id: " + clientId + " nombre: " + data.getFirstName());
 
                 // Segunda llamada: Crear simulación
                 if (createSimulation(data, clientId, headers)) {
