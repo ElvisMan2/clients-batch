@@ -1,6 +1,6 @@
 package com.inetum.clientsbatch.config;
 
-import com.inetum.clientsbatch.model.Client;
+import com.inetum.clientsbatch.model.Data;
 import com.inetum.clientsbatch.processor.ClientItemProcessor;
 import com.inetum.clientsbatch.reader.ClientFileReader;
 import com.inetum.clientsbatch.writer.ReportWriter;
@@ -37,7 +37,7 @@ public class BatchConfig {
     public Step step(JobRepository jobRepository,
                      PlatformTransactionManager platformTransactionManager){
         return new StepBuilder("step1",jobRepository)
-                .<Client, Client>chunk(5,platformTransactionManager)
+                .<Data, Data>chunk(5,platformTransactionManager)
                 .reader(clientFileReader.clientItemReader())//extrae los clientes del csv
                 .processor(processor())//procesa cada cliente enviandolo a la api
                 .writer(writer())//genera el reporte

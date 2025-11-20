@@ -1,6 +1,6 @@
 package com.inetum.clientsbatch.writer;
 
-import com.inetum.clientsbatch.model.Client;
+import com.inetum.clientsbatch.model.Data;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.item.Chunk;
@@ -9,12 +9,12 @@ import org.springframework.batch.item.ItemWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class ReportWriter implements ItemWriter<Client> {
+public class ReportWriter implements ItemWriter<Data> {
 
     private int totalWritten = 0;
 
     @Override
-    public void write(Chunk<? extends Client> chunk) throws Exception {
+    public void write(Chunk<? extends Data> chunk) throws Exception {
         totalWritten += chunk.getItems().size();
     }
 
