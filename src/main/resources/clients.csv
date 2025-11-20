@@ -1,5 +1,5 @@
 firstName,paternalLastName,maternalLastName,currencyOfIncome,monthlyIncome,loanAmount,currency,interestRate,term,disbursementDate
-Juan,García,López,USD,2500.00,15000.00,USD,8.5,24,20/12/2025
+Juan,García,López,USD,100.00,15000.00,USD,8.5,24,20/12/2025
 María,Fernández,González,EUR,3200.50,20000.00,EUR,6.75,36,22/12/2025
 Carlos,Rodríguez,Martínez,USD,1800.75,10000.00,USD,9.25,18,18/12/2025
 Ana,Morales,Silva,MXN,45000.00,250000.00,MXN,10.5,48,28/12/2025

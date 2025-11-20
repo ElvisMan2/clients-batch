@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
     private final RestTemplate restTemplate;
     private final String apiUrl = "http://localhost:8081/api-simulation-loans/api/clients";
+    private final String simulationApiUrl = "http://localhost:8081/api-simulation-loans/simulations/client/";
 
     public ClientItemProcessor() {
         this.restTemplate = new RestTemplate();
@@ -39,24 +41,63 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
             if (response.getStatusCode().is2xxSuccessful()) {
 
-                data.setClientId(   //Asignar clientId devuelto por la API
-                        new ObjectMapper()
-                                .readTree(response.getBody())
-                                .get(1)
-                                .get("clientId")
-                                .asLong()
-                );
-                System.out.println("Cliente creado: id: "+data.getClientId() +" nombre: "+ data.getFirstName());
-                return data;
+                Long clientId = new ObjectMapper()
+                        .readTree(response.getBody())
+                        .get(1)
+                        .get("clientId")
+                        .asLong();
+
+                data.setClientId(clientId);
+                System.out.println("✓ Cliente creado: id: " + clientId + " nombre: " + data.getFirstName());
+
+                // Segunda llamada: Crear simulación
+                if (createSimulation(data, clientId, headers)) {
+                    return data;
+                } else {
+                    return null;
+                }
+
             } else {
                 System.err.println("Error al enviar cliente: " + response.getStatusCode());
-                return null; // No procesar este cliente
+                return null;
             }
 
         } catch (Exception e) {
             System.err.println("⚠ Error consumiendo API para cliente " + data.getFirstName());
             e.printStackTrace();
-            return null; // No procesar este cliente
+            return null;
+        }
+    }
+
+    private boolean createSimulation(Data data, Long clientId, HttpHeaders headers) {
+        try {
+            Map<String, Object> simulationPayload = new HashMap<>();
+            simulationPayload.put("loanAmount", data.getLoanAmount());
+            simulationPayload.put("currency", data.getCurrency());
+            simulationPayload.put("interestRate", data.getInterestRate());
+            simulationPayload.put("term", data.getTerm());
+
+            // Formatear la fecha a dd/MM/yyyy
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            simulationPayload.put("disbursementDate", data.getDisbursementDate().format(formatter));
+
+            HttpEntity<Map<String, Object>> simulationRequest = new HttpEntity<>(simulationPayload, headers);
+            String simulationUrl = simulationApiUrl + clientId;
+
+            var simulationResponse = restTemplate.postForEntity(simulationUrl, simulationRequest, String.class);
+
+            if (simulationResponse.getStatusCode().is2xxSuccessful()) {
+                System.out.println("✓ Simulación creada para cliente: " + clientId);
+                return true;
+            } else {
+                System.err.println("✗ Error al crear simulación para cliente " + clientId + ": " + simulationResponse.getStatusCode());
+                return false;
+            }
+
+        } catch (Exception e) {
+            System.err.println("⚠ Error creando simulación para cliente " + clientId);
+            e.printStackTrace();
+            return false;
         }
     }
 }
