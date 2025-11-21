@@ -109,8 +109,8 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                 Double totalPayment = jsonNode.get("totalPayment").asDouble();
                 data.setTotalPayment(totalPayment);
 
-                logger.info(String.format("✓ Simulación creada para cliente: %s | simulationId: %s | approved: %s",
-                        clientId, simulationId, approved));
+                logger.info("Simulación creada para cliente: {} | simulationId: {} | approved: {}",
+                        clientId, simulationId, approved);
 
                 // Tercera llamada: Crear préstamo solo si está aprobado
                 if (approved) {
