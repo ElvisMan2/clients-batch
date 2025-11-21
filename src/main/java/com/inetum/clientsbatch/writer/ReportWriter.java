@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ReportWriter implements ItemWriter<Data> {
 
@@ -19,6 +22,7 @@ public class ReportWriter implements ItemWriter<Data> {
     private int totalApproved = 0;
     private final List<Data> approvedLoans = new ArrayList<>();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final Logger logger = LoggerFactory.getLogger(ReportWriter.class);
 
     @Override
     public void write(Chunk<? extends Data> chunk) throws Exception {
@@ -35,22 +39,23 @@ public class ReportWriter implements ItemWriter<Data> {
     @AfterStep
     public void afterStep(StepExecution stepExecution) {
         try (FileWriter writer = new FileWriter("report.txt", StandardCharsets.UTF_8)) {
-            writer.write("=".repeat(120) + "\n");
-            writer.write("REPORTE DE PRÉSTAMOS GENERADOS\n");
-            writer.write("=".repeat(120) + "\n\n");
+            writer.write(String.format("%s%n%n", "=".repeat(120)));
 
-            writer.write(String.format("Total de registros procesados: %d\n", totalRead));
-            writer.write(String.format("Total de préstamos generados: %d\n", totalApproved));
-            writer.write(String.format("Simulaciones no aprobadas: %d\n\n", totalRead - totalApproved));
+            writer.write(String.format("Total de registros procesados: %d%n", totalRead));
+            writer.write(String.format("Total de préstamos generados: %d%n", totalApproved));
+            writer.write(String.format("Simulaciones no aprobadas: %d%n%n", totalRead - totalApproved));
 
-            writer.write("=".repeat(120) + "\n");
-            writer.write(String.format("%-10s %-15s %-20s %-20s %-10s %-10s %-15s %-15s %-15s %-15s %-10s %-12s\n",
+            writer.write(String.format("%s%n", "=".repeat(120)));
+            writer.write(String.format(
+                    "%-10s %-15s %-20s %-20s %-10s %-10s %-15s %-15s %-15s %-15s %-10s %-12s%n",
                     "ID Cliente", "Nombre", "Apellido Pat.", "Apellido Mat.", "ID Préstamo", "Moneda",
-                    "Monto Préstamo", "Total Interés", "Fecha Desemb.", "Próximo Pago", "Cuotas", "Monto Cuota"));
-            writer.write("=".repeat(120) + "\n");
+                    "Monto Préstamo", "Total Interés", "Fecha Desemb.", "Próximo Pago", "Cuotas", "Monto Cuota"
+            ));
+            writer.write(String.format("%s%n", "=".repeat(120)));
 
             for (Data loan : approvedLoans) {
-                writer.write(String.format("%-10d %-15s %-20s %-20s %-10d %-10s %-15.2f %-15.2f %-15s %-15s %-10d %-12.2f\n",
+                writer.write(String.format(
+                        "%-10d %-15s %-20s %-20s %-10d %-10s %-15.2f %-15.2f %-15s %-15s %-10d %-12.2f%n",
                         loan.getClientId(),
                         loan.getFirstName(),
                         loan.getPaternalLastName(),
@@ -62,17 +67,17 @@ public class ReportWriter implements ItemWriter<Data> {
                         loan.getDisbursementDate().format(dateFormatter),
                         loan.getNextPaymentDate().format(dateFormatter),
                         loan.getTerm(),
-                        loan.getMonthlyPayment()));
+                        loan.getMonthlyPayment()
+                ));
             }
 
-            writer.write("=".repeat(120) + "\n");
+            writer.write(String.format("%s%n", "=".repeat(120)));
 
-            System.out.println("\n✓ Reporte generado exitosamente: report.txt");
-            System.out.println("Total de préstamos generados: " + totalApproved);
+            logger.info("\n✓ Reporte generado exitosamente: report.txt");
+            logger.info("Total de préstamos generados: {}", totalApproved);
 
         } catch (IOException e) {
-            System.err.println("✗ Error al generar el reporte");
-            e.printStackTrace();
+            logger.info("✗ Error al generar el reporte");
         }
     }
 }

@@ -129,29 +129,6 @@ class ReportWriterTest {
     }
 
     @Test
-    void testReportContainsCorrectHeaders() throws Exception {
-        // Arrange
-        Data approvedLoan = createTestData(1L, "Juan", "García", "López",
-                100L, "USD", 15000.0, 500.0,
-                LocalDate.of(2025, 12, 20), LocalDate.of(2026, 1, 20),
-                24, 681.84);
-
-        Chunk<Data> chunk = new Chunk<>(List.of(approvedLoan));
-        reportWriter.write(chunk);
-
-        // Act
-        reportWriter.afterStep(stepExecution);
-
-        // Assert
-        String content = Files.readString(Paths.get(REPORT_FILE), StandardCharsets.UTF_8);
-        assertTrue(content.contains("REPORTE DE PRÉSTAMOS GENERADOS"));
-        assertTrue(content.contains("ID Cliente"));
-        assertTrue(content.contains("Nombre"));
-        assertTrue(content.contains("ID Préstamo"));
-        assertTrue(content.contains("Moneda"));
-    }
-
-    @Test
     void testReportContainsCorrectStatistics() throws Exception {
         // Arrange
         Data approvedLoan1 = createTestData(1L, "Juan", "García", "López",

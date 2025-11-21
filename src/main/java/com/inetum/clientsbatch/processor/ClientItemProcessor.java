@@ -2,6 +2,7 @@ package com.inetum.clientsbatch.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inetum.clientsbatch.dto.Data;
+import com.inetum.clientsbatch.writer.ReportWriter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,14 +13,17 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClientItemProcessor implements ItemProcessor<Data, Data> {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final String apiUrl = "http://localhost:8081/api-simulation-loans/api/clients";
-    private final String simulationApiUrl = "http://localhost:8081/api-simulation-loans/simulations/client/";
-    private final String loanApiUrl = "http://localhost:8082/api-generation-loans/loans/generate/simulation/";
+    private static final Logger logger = LoggerFactory.getLogger(ClientItemProcessor.class);
+    private static final String API_URL = "http://localhost:8081/api-simulation-loans/api/clients";
+    private static final String SIMULATION_API_URL = "http://localhost:8081/api-simulation-loans/simulations/client/";
+    private static final String LOAN_API_URL = "http://localhost:8082/api-generation-loans/loans/generate/simulation/";
 
     public ClientItemProcessor() {
         this.restTemplate = new RestTemplate();
@@ -41,7 +45,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
-            var response = restTemplate.postForEntity(apiUrl, request, String.class);
+            var response = restTemplate.postForEntity(API_URL, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 var jsonNode = objectMapper.readTree(response.getBody()).get(1);
@@ -50,10 +54,10 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                 data.setClientId(clientId);
 
                 if(response.getStatusCode().value()== 201)
-                System.out.println("✓ Cliente creado: id: " + clientId + " nombre: " + data.getFirstName());
+                    logger.info("✓ Cliente creado: id: " + clientId + " nombre: " + data.getFirstName());
 
                 if(response.getStatusCode().value()== 200)
-                    System.out.println("✓ Cliente existe: id: " + clientId + " nombre: " + data.getFirstName());
+                    logger.info("✓ Cliente existe: id: " + clientId + " nombre: " + data.getFirstName());
 
                 // Segunda llamada: Crear simulación
                 if (createSimulation(data, clientId, headers)) {
@@ -63,13 +67,12 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                 }
 
             } else {
-                System.err.println("Error al enviar cliente: " + response.getStatusCode());
+                logger.warn("Error al enviar cliente: {}", response.getStatusCode());
                 return null;
             }
 
         } catch (Exception e) {
-            System.err.println("⚠ Error consumiendo API para cliente " + data.getFirstName());
-            e.printStackTrace();
+            logger.warn("Error consumiendo API para cliente {}", data.getFirstName());
             return null;
         }
     }
@@ -87,7 +90,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
             simulationPayload.put("disbursementDate", data.getDisbursementDate().format(formatter));
 
             HttpEntity<Map<String, Object>> simulationRequest = new HttpEntity<>(simulationPayload, headers);
-            String simulationUrl = simulationApiUrl + clientId;
+            String simulationUrl = SIMULATION_API_URL + clientId;
 
             var simulationResponse = restTemplate.postForEntity(simulationUrl, simulationRequest, String.class);
 
@@ -97,7 +100,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                 Long simulationId = jsonNode.get("simulationId").asLong();
                 data.setSimulationId(simulationId);
 
-                Boolean approved = jsonNode.get("approved").asBoolean();
+                boolean approved = jsonNode.get("approved").asBoolean();
                 data.setApproved(approved);
 
                 Double monthlyPayment = jsonNode.get("monthlyPayment").asDouble();
@@ -106,26 +109,24 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                 Double totalPayment = jsonNode.get("totalPayment").asDouble();
                 data.setTotalPayment(totalPayment);
 
-                System.out.println("✓ Simulación creada para cliente: " + clientId +
-                        " | simulationId: " + simulationId +
-                        " | approved: " + approved);
+                logger.info(String.format("✓ Simulación creada para cliente: %s | simulationId: %s | approved: %s",
+                        clientId, simulationId, approved));
 
                 // Tercera llamada: Crear préstamo solo si está aprobado
                 if (approved) {
                     return createLoan(data, simulationId, headers);
                 } else {
-                    System.out.println("⚠ Simulación no aprobada para cliente: " + clientId + " - No se creará el préstamo");
+                    logger.info("Simulación no aprobada para cliente: {} - No se creará el préstamo", clientId);
                     return true;
                 }
 
             } else {
-                System.err.println("✗ Error al crear simulación para cliente " + clientId + ": " + simulationResponse.getStatusCode());
+                logger.warn("Error al crear simulación para cliente {}: {}", clientId, simulationResponse.getStatusCode());
                 return false;
             }
 
         } catch (Exception e) {
-            System.err.println("⚠ Error creando simulación para cliente " + clientId);
-            e.printStackTrace();
+            logger.warn("Error creando simulación para cliente {}",clientId);
             return false;
         }
     }
@@ -133,7 +134,7 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
     private boolean createLoan(Data data, Long simulationId, HttpHeaders headers) {
         try {
             HttpEntity<Void> loanRequest = new HttpEntity<>(headers);
-            String loanUrl = loanApiUrl + simulationId;
+            String loanUrl = LOAN_API_URL + simulationId;
 
             var loanResponse = restTemplate.postForEntity(loanUrl, loanRequest, String.class);
 
@@ -147,16 +148,15 @@ public class ClientItemProcessor implements ItemProcessor<Data, Data> {
                 data.setNextPaymentDate(dueDate);
 
                 data.setTotalInterest(data.getMonthlyPayment()*data.getTerm()-data.getLoanAmount());
-                System.out.println("✓ Préstamo creado: loanId: " + loanId + " para simulación: " + simulationId);
+                logger.info("Préstamo creado: loanId: {} para simulación: {}", loanId, simulationId);
                 return true;
             } else {
-                System.err.println("✗ Error al crear préstamo para simulación " + simulationId + ": " + loanResponse.getStatusCode());
+                logger.warn("Error al crear préstamo para simulación {}: {}", simulationId, loanResponse.getStatusCode());
                 return false;
             }
 
         } catch (Exception e) {
-            System.err.println("⚠ Error creando simulación para cliente " + simulationId);
-            e.printStackTrace();
+            logger.warn("Error creando préstamo para simulación {}", simulationId);
             return false;
         }
     }

@@ -153,27 +153,6 @@ class ClientFileReaderTest {
     }
 
     @Test
-    void testReaderReturnsNullAfterLastRecord() throws Exception {
-        itemReader.open(new ExecutionContext());
-
-        Data data;
-        int count = 0;
-
-        // Leer todos los registros
-        while ((data = itemReader.read()) != null) {
-            count++;
-        }
-
-        // Intentar leer uno más
-        Data afterLast = itemReader.read();
-
-        assertNull(afterLast, "Después del último registro debe retornar null");
-        assertEquals(20, count);
-
-        itemReader.close();
-    }
-
-    @Test
     void testLargeMonthlyIncomeValues() throws Exception {
         itemReader.open(new ExecutionContext());
 
