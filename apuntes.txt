@@ -1,0 +1,29 @@
+FILTRO PADRE:
+inputDTO -> buildPostFilterParams -> saveFilterParent -> SQL_INSERT_FILTER -> sql.ora.insert_filters
+
+DETALLES:
+inputDTO -> buildPostFilterDetailsParams -> saveFilterDetails ->SQL_INSERT_FILTER_DETAILS ->sql.ora.insert_filter_details
+
+Consultas:
+- variable location: es el id que se acaba de crear en la base de datos.
+- variable severity
+
+
+
+jdbcUtils.queryForList(Constant.SQL_SELECT_ID, params) // su funcione s realizar una bsuqueda
+- el primer argumento es la query SQL_INSERT_FILTER
+  sql.ora.select_id = cnxPSOP; SELECT holiday_id AS ID FROM PSOP.T_PSOP_HOLIDAY WHERE holiday_name = :holiday_name;
+  (primera parte indica la conexion)
+- el segundo valor es la clave:valor para la bsuqueda, emplo:
+{
+  "holiday_name": "Navidad"  // key: HOLIDAY_NAME, value: inputDTO.getName()
+}
+
+
+vt4lex62na
+
+
+BBDC-OTg1Mjg4MzIyODEyOmJ8Vrw7EfJhZiQn880ud10wi098
+
+
+https://bitbucket.globaldevtools.bbva.com/bitbucket/projects/PE_PAPX_APP-ID-85735_DSG/repos/onl_formacion202305/browse
